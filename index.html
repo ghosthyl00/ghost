@@ -23,12 +23,16 @@
 </div>
 
 <script type="module">
-    // Импортируем модули Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    
+   // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-    // ТВОИ КЛЮЧИ СО СКРИНШОТА
-  const firebaseConfig = {
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
   apiKey: "AIzaSyDBBz4pftyUUTEbazEMd3CHPteibf9wTgk",
   authDomain: "ghost-691c3.firebaseapp.com",
   projectId: "ghost-691c3",
@@ -38,9 +42,9 @@
   measurementId: "G-NC4L9VKXYT"
 };
 
-    // Инициализация
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
     // Логика кнопки
     document.getElementById("feedbackForm").addEventListener("submit", async (e) => {

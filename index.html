@@ -23,28 +23,23 @@
 </div>
 
 <script type="module">
-    
-   // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    // Импортируем модули Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDBBz4pftyUUTEbazEMd3CHPteibf9wTgk",
-  authDomain: "ghost-691c3.firebaseapp.com",
-  projectId: "ghost-691c3",
-  storageBucket: "ghost-691c3.firebasestorage.app",
-  messagingSenderId: "744464460696",
-  appId: "1:744464460696:web:0f4c233ad62d1d60c619ed",
-  measurementId: "G-NC4L9VKXYT"
-};
+    // ТВОИ КЛЮЧИ СО СКРИНШОТА
+    const firebaseConfig = {
+        apiKey: "AIzaSyD6j7Bb_Dy5ybDZguwTn4i3DHhIF5SbuYQ",
+        authDomain: "enter-65f57.firebaseapp.com",
+        projectId: "enter-65f57",
+        storageBucket: "enter-65f57.firebasestorage.app",
+        messagingSenderId: "672982960171",
+        appId: "1:672982960171:web:c2364e2b8087a51f7f426e"
+    };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+    // Инициализация
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     // Логика кнопки
     document.getElementById("feedbackForm").addEventListener("submit", async (e) => {

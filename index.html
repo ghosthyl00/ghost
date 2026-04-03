@@ -91,51 +91,6 @@
                 `;
             });
         });
-        import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get } from "firebase/database";
-
-// 1. Сюда вставь свои данные из Firebase Console (Settings -> Your Apps)
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  databaseURL: "YOUR_DATABASE_URL",
-  projectId: "YOUR_PROJECT_ID",
-  appId: "YOUR_APP_ID"
-};
-
-// Инициализация
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/**
- * ФУНКЦИЯ 1: ЗАПИСЬ ДАННЫХ
- * path - строка (например, 'users/1'), data - объект или значение
- */
-export async function saveData(path, data) {
-  try {
-    await set(ref(db, path), data);
-    console.log("Успешно сохранено!");
-  } catch (e) {
-    console.error("Ошибка при сохранении: " + e.message);
-  }
-}
-
-/**
- * ФУНКЦИЯ 2: ПОЛУЧЕНИЕ ДАННЫХ
- * path - строка (например, 'users/1')
- */
-export async function loadData(path) {
-  try {
-    const snapshot = await get(ref(db, path));
-    if (snapshot.exists()) {
-      return snapshot.val();
-    } else {
-      console.log("Данных нет");
-      return null;
-    }
-  } catch (e) {
-    console.error("Ошибка при чтении: " + e.message);
-  }
-}
     </script>
 </body>
 </html>

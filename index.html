@@ -7,18 +7,13 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { width: 100%; max-width: 500px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-
-        /* Стили блока авторизации */
         .auth-bar { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #007bff; }
-
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.3s; }
         button:hover { background: #0056b3; }
-        button:disabled { background: #ccc; }
         .logout-btn { background: #ff4757; padding: 8px 15px; width: auto; font-size: 14px; }
-
-        .post { background: #fff; border: 1px solid #eaeaea; padding: 15px; margin-top: 15px; border-radius: 8px; width: 100%; max-width: 500px; }
+        .post { background: #fff; border: 1px solid #eaeaea; padding: 15px; margin-top: 15px; border-radius: 8px; width: 100%; }
         .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .post-avatar { width: 30px; height: 30px; border-radius: 50%; }
         .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; margin-top: 10px; }
@@ -27,7 +22,7 @@
 </head>
 <body>
 
-    <div id="authSection" class="container" style="max-width: 500px; text-align: center;">
+    <div id="authSection" class="container" style="text-align: center;">
         <button id="loginBtn">Войти через Google</button>
         <div id="userInfo" style="display: none;" class="auth-bar">
             <img id="userPhoto" class="user-avatar" src="" alt="Avatar">
@@ -51,23 +46,22 @@
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
+        // ТВОЯ НОВАЯ КОНФИГУРАЦИЯ (ghost-a00c4)
         const firebaseConfig = {
-         const firebaseConfig = {
-  apiKey: "AIzaSyC1tlN7pIm9_7JYZTlCrYdhnLbI6BC4dW8",
-  authDomain: "ghost-a00c4.firebaseapp.com",
-  projectId: "ghost-a00c4",
-  storageBucket: "ghost-a00c4.firebasestorage.app",
-  messagingSenderId: "398574820709",
-  appId: "1:398574820709:web:a391f37c2126451432558c",
-  measurementId: "G-WEEDNNP5MP"
-};
+          apiKey: "AIzaSyC1tlN7pIm9_7JYZTlCrYdhnLbI6BC4dW8",
+          authDomain: "ghost-a00c4.firebaseapp.com",
+          projectId: "ghost-a00c4",
+          storageBucket: "ghost-a00c4.firebasestorage.app",
+          messagingSenderId: "398574820709",
+          appId: "1:398574820709:web:a391f37c2126451432558c",
+          measurementId: "G-WEEDNNP5MP"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // --- ЛОГИКА АВТОРИЗАЦИИ ---
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const userInfo = document.getElementById('userInfo');
@@ -92,7 +86,6 @@
             }
         });
 
-        // --- ЛОГИКА РАБОТЫ С ДАННЫМИ ---
         window.processLike = async (id) => {
             await updateDoc(doc(db, "requests", id), { likes: increment(1) });
         };
@@ -116,7 +109,6 @@
             }
         };
 
-        // --- REAL-TIME ОБНОВЛЕНИЕ ЛЕНТЫ ---
         const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
         onSnapshot(q, (snapshot) => {
             const feed = document.getElementById('feed');
@@ -137,7 +129,7 @@
             });
         });
 
-        window.db = db; // Для тестов в консоли F12
+        window.db = db;
     </script>
 </body>
 </html>

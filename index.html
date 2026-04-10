@@ -18,6 +18,45 @@
         .post-avatar { width: 30px; height: 30px; border-radius: 50%; }
         .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; margin-top: 10px; }
         .time { font-size: 11px; color: #999; margin-left: auto; }
+        /* Оформление окна чата */
+#chat {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 12px;
+    background: #f9f9f9;
+    display: flex;
+    flex-direction: column; /* Сообщения идут в колонку */
+    gap: 10px; /* Расстояние между сообщениями */
+}
+
+/* Общий стиль сообщения */
+.message-bubble {
+    max-width: 75%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    word-wrap: break-word;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Мои сообщения (справа, синие) */
+.my-msg {
+    align-self: flex-end;
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Чужие сообщения (слева, серые) */
+.their-msg {
+    align-self: flex-start;
+    background: #e9e9eb;
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
     </style>
 </head>
 <body>
@@ -41,17 +80,18 @@
 
     <div id="feed" style="width: 100%; max-width: 500px;"></div>
     <!-- ===== DM (личные сообщения) ===== -->
-<div class="container" id="dmSection" style="display:none;">
+   <div class="container" id="dmSection" style="display:none;">
     <h3>Личные сообщения</h3>
+    
+    <input type="text" id="receiverId" placeholder="Введите UID получателя">
 
-    <input type="text" id="receiverId" placeholder="Введите UID пользователя">
+    <div id="chat"></div>
 
-    <div id="chat" style="height:200px; overflow-y:auto; border:1px solid #ddd; padding:10px; margin:10px 0;"></div>
-
-    <input type="text" id="messageInput" placeholder="Сообщение">
-    <button id="sendBtn">Отправить</button>
+    <div style="display: flex; gap: 8px;">
+        <input type="text" id="messageInput" placeholder="Ваше сообщение...">
+        <button id="sendBtn" style="width: auto;">Отправить</button>
+    </div>
 </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
@@ -174,40 +214,32 @@ document.getElementById("sendBtn").onclick = async () => {
 };
 
 // загрузка сообщений
-document.getElementById("receiverId").addEventListener("change", () => {
-    const receiverId = document.getElementById("receiverId").value;
+// Слушаем изменения в чате
+onSnapshot(q, (snapshot) => {
+    const chat = document.getElementById("chat");
+    chat.innerHTML = ""; // Очищаем чат перед обновлением
 
-    if (!receiverId) return;
+    snapshot.forEach(doc => {
+        const msg = doc.data();
+        const div = document.createElement("div");
+        
+        // 1. Добавляем базовый класс пузырька
+        div.classList.add("message-bubble");
 
-    const senderId = auth.currentUser.uid;
-    const chatId = getChatId(senderId, receiverId);
+        // 2. Проверяем: если отправитель — это я, красим в синий и двигаем вправо
+        if (msg.senderId === auth.currentUser.uid) {
+            div.classList.add("my-msg");
+        } else {
+            // Иначе — красим в серый и двигаем влево
+            div.classList.add("their-msg");
+        }
 
-    const q = query(
-        collection(db, "messages", chatId, "messages"),
-        orderBy("timestamp")
-    );
-
-    onSnapshot(q, (snapshot) => {
-        const chat = document.getElementById("chat");
-        chat.innerHTML = "";
-
-        snapshot.forEach(doc => {
-            const msg = doc.data();
-
-            const div = document.createElement("div");
-            div.textContent = msg.text;
-
-            if (msg.senderId === senderId) {
-                div.style.textAlign = "right";
-                div.style.color = "blue";
-            } else {
-                div.style.textAlign = "left";
-                div.style.color = "black";
-            }
-
-            chat.appendChild(div);
-        });
+        div.textContent = msg.text;
+        chat.appendChild(div);
     });
+
+    // 3. Скроллим чат в самый низ, чтобы видеть новые сообщения
+    chat.scrollTop = chat.scrollHeight;
 });
     </script>
     

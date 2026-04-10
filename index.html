@@ -164,6 +164,10 @@ document.getElementById('mainBtn').onclick = async () => {
 
 const feedQuery = query(collection(db, "requests"), orderBy("timestamp", "desc"));
 onSnapshot(feedQuery, (snapshot) => {
+    // Внутри snapshot.forEach
+if (msg.senderId !== auth.currentUser.uid) {
+    console.log("Пришло новое сообщение от собеседника!");
+}
     const feed = document.getElementById('feed');
     feed.innerHTML = "";
     snapshot.forEach((doc) => {

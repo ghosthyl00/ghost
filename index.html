@@ -2,82 +2,106 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Монитор статусов</title>
     <style>
-        /* Базовые стили для корректного отображения */
-        .user-item { display: flex; align-items: center; margin-bottom: 10px; font-family: sans-serif; }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f4f7f6; }
+        .user-item { 
+            display: flex; align-items: center; 
+            background: white; padding: 10px; 
+            margin-bottom: 8px; border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; border: 1px solid rgba(0,0,0,0.1); }
+        .controls { margin-top: 20px; display: flex; gap: 10px; }
+        button { 
+            padding: 8px 15px; cursor: pointer; border: none; 
+            border-radius: 5px; transition: opacity 0.2s; 
+        }
+        button:hover { opacity: 0.8; }
+        #myInfo { font-weight: bold; margin-bottom: 15px; color: #333; }
+        hr { border: 0; border-top: 1px solid #ddd; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <div id="myInfo">Загрузка профиля...</div>
+    <div id="myInfo">Загрузка данных профиля...</div>
     <hr>
-    <div id="groupList"></div>
+    <div id="groupList">Загрузка списка группы...</div>
 
-    <div style="margin-top: 20px;">
-        <button onclick="changeStatus('Работаю', 'green')">Работаю</button>
-        <button onclick="changeStatus('Обедаю', 'orange')">Обедаю</button>
-        <button onclick="changeStatus('Отдыхаю', 'red')">Отдыхаю</button>
+    <div class="controls">
+        <button style="background: #4caf50; color: white;" onclick="changeStatus('Работаю', '#4caf50')">Работаю</button>
+        <button style="background: #ff9800; color: white;" onclick="changeStatus('Обедаю', '#ff9800')">Обедаю</button>
+        <button style="background: #f44336; color: white;" onclick="changeStatus('Отдыхаю', '#f44336')">Отдыхаю</button>
     </div>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-        // 1. Настройки подключения (замените на свои)
+        // 1. Конфигурация (твои данные из проекта)
         const URL = 'https://jwmkwybnmcdrtcinwkbj.supabase.co';
         const KEY = 'sb_publishable_br_nn2jCaXKmd5ou1IsZEA_WTe3g3Tv';
         const supabase = createClient(URL, KEY);
 
-        // 2. Вставьте ваш ID из таблицы profiles
+        // 2. Твой уникальный ID из таблицы profiles
         const MY_ID = '432c9bcb-c709-4c1b-92a7-6425e86d27f3';
 
-        // Функция смены статуса
-        window.changeStatus = async (text, color) => {
+        // Функция обновления статуса (привязана к window, чтобы кнопки её видели)
+        window.changeStatus = async (statusText, statusColor) => {
             const { error } = await supabase
                 .from('profiles')
-                .update({ status: text, color: color }) // Убедитесь, что колонка 'color' создана в БД
+                .update({ 
+                    status: statusText, 
+                    color: statusColor 
+                })
                 .eq('id', MY_ID);
 
             if (error) {
-                alert("Ошибка! Проверьте RLS политики в Supabase.");
-                console.error(error);
+                console.error('Ошибка Supabase:', error);
+                alert("Ошибка! Проверь: \n1. Наличие колонки 'color' в таблице.\n2. Политики RLS (UPDATE).");
             } else {
-                fetchGroup(); // Обновляем список сразу после изменения
+                fetchGroup(); // Сразу обновляем экран
             }
         };
 
-        // Функция получения списка всех пользователей
+        // Функция получения данных
         async function fetchGroup() {
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .order('username', { ascending: true });
 
-            if (error) return console.error(error);
+            if (error) {
+                console.error('Ошибка загрузки:', error);
+                return;
+            }
 
-            const list = document.getElementById('groupList');
-            list.innerHTML = data.map(user => `
+            // Рендерим список пользователей
+            const listContainer = document.getElementById('groupList');
+            listContainer.innerHTML = data.map(user => `
                 <div class="user-item">
                     <div class="status-dot" style="background: ${user.color || '#ccc'}"></div>
                     <div style="flex-grow: 1;">
-                        <strong>${user.username}</strong><br>
-                        <small style="color: #666;">${user.status || 'Статус не задан'}</small>
+                        <strong>${user.username || 'Без имени'}</strong><br>
+                        <small style="color: #666;">${user.status || 'Нет статуса'}</small>
                     </div>
                 </div>
             `).join('');
 
-            // Отображение информации о текущем пользователе
-            const me = data.find(u => u.id === MY_ID);
-            if (me) {
-                document.getElementById('myInfo').innerText = `Вы зашли как: ${me.username}`;
+            // Обновляем шапку "Вы зашли как..."
+            const currentUser = data.find(u => u.id === MY_ID);
+            const infoDiv = document.getElementById('myInfo');
+            if (currentUser) {
+                infoDiv.innerText = `Вы зашли как: ${currentUser.username}`;
+            } else {
+                infoDiv.innerHTML = `<span style="color:red;">ID ${MY_ID} не найден в базе!</span>`;
             }
         }
 
-        // Первичный вызов
+        // Запуск при старте
         fetchGroup();
 
-        // Обновление данных каждые 5 секунд (Polling)
+        // Обновление каждые 5 секунд
         setInterval(fetchGroup, 5000);
 
     </script>

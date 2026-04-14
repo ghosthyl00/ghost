@@ -18,45 +18,6 @@
         .post-avatar { width: 30px; height: 30px; border-radius: 50%; }
         .like-btn { cursor: pointer; border: none; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; margin-top: 10px; }
         .time { font-size: 11px; color: #999; margin-left: auto; }
-        /* Оформление окна чата */
-#chat {
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid #eee;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 12px;
-    background: #f9f9f9;
-    display: flex;
-    flex-direction: column; /* Сообщения идут в колонку */
-    gap: 10px; /* Расстояние между сообщениями */
-}
-
-/* Общий стиль сообщения */
-.message-bubble {
-    max-width: 75%;
-    padding: 10px 15px;
-    border-radius: 15px;
-    font-size: 14px;
-    word-wrap: break-word;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-/* Мои сообщения (справа, синие) */
-.my-msg {
-    align-self: flex-end;
-    background: #007bff;
-    color: white;
-    border-bottom-right-radius: 2px;
-}
-
-/* Чужие сообщения (слева, серые) */
-.their-msg {
-    align-self: flex-start;
-    background: #e9e9eb;
-    color: #333;
-    border-bottom-left-radius: 2px;
-}
     </style>
 </head>
 <body>
@@ -79,193 +40,96 @@
     </div>
 
     <div id="feed" style="width: 100%; max-width: 500px;"></div>
-    <!-- ===== DM (личные сообщения) ===== -->
-   <div class="container" id="dmSection" style="display:none;">
-    <h3>Личные сообщения</h3>
-    
-    <input type="text" id="receiverId" placeholder="Введите UID получателя">
 
-    <div id="chat"></div>
-
-    <div style="display: flex; gap: 8px;">
-        <input type="text" id="messageInput" placeholder="Ваше сообщение...">
-        <button id="sendBtn" style="width: auto;">Отправить</button>
-    </div>
-</div>
     <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyC1tlN7pIm9_7JYZTlCrYdhnLbI6BC4dW8",
-    authDomain: "ghost-a00c4.firebaseapp.com",
-    projectId: "ghost-a00c4",
-    storageBucket: "ghost-a00c4.firebasestorage.app",
-    messagingSenderId: "398574820709",
-    appId: "1:398574820709:web:a391f37c2126451432558c",
-    measurementId: "G-WEEDNNP5MP"
-};
+        // ТВОЯ НОВАЯ КОНФИГУРАЦИЯ (ghost-a00c4)
+        const firebaseConfig = {
+          apiKey: "AIzaSyC1tlN7pIm9_7JYZTlCrYdhnLbI6BC4dW8",
+          authDomain: "ghost-a00c4.firebaseapp.com",
+          projectId: "ghost-a00c4",
+          storageBucket: "ghost-a00c4.firebasestorage.app",
+          messagingSenderId: "398574820709",
+          appId: "1:398574820709:web:a391f37c2126451432558c",
+          measurementId: "G-WEEDNNP5MP"
+        };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-// Элементы интерфейса
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const userInfo = document.getElementById('userInfo');
-const messageForm = document.getElementById('messageForm');
-const dmSection = document.getElementById('dmSection');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        const messageForm = document.getElementById('messageForm');
 
-loginBtn.onclick = () => signInWithPopup(auth, provider);
-logoutBtn.onclick = () => signOut(auth);
+        loginBtn.onclick = () => signInWithPopup(auth, provider);
+        logoutBtn.onclick = () => signOut(auth);
 
-// --- АВТОРИЗАЦИЯ ---
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        dmSection.style.display = 'block';
-        loginBtn.style.display = 'none';
-        userInfo.style.display = 'flex';
-        messageForm.style.display = 'block';
-        document.getElementById('userName').innerText = user.displayName;
-        document.getElementById('userPhoto').src = user.photoURL;
-        document.getElementById('name').value = user.displayName;
-        document.getElementById('email').value = user.email;
-    } else {
-        dmSection.style.display = 'none';
-        loginBtn.style.display = 'block';
-        userInfo.style.display = 'none';
-        messageForm.style.display = 'none';
-    }
-});
-
-// --- ОБЩАЯ ЛЕНТА (POSTS) ---
-window.processLike = async (id) => {
-    await updateDoc(doc(db, "requests", id), { likes: increment(1) });
-};
-
-document.getElementById('mainBtn').onclick = async () => {
-    const content = document.getElementById('content').value;
-    if (!content) return alert("Введите текст сообщения!");
-    try {
-        await addDoc(collection(db, "requests"), {
-            name: auth.currentUser.displayName,
-            email: auth.currentUser.email,
-            photo: auth.currentUser.photoURL,
-            text: content,
-            likes: 0,
-            timestamp: serverTimestamp()
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginBtn.style.display = 'none';
+                userInfo.style.display = 'flex';
+                messageForm.style.display = 'block';
+                document.getElementById('userName').innerText = user.displayName;
+                document.getElementById('userPhoto').src = user.photoURL;
+                document.getElementById('name').value = user.displayName;
+                document.getElementById('email').value = user.email;
+            } else {
+                loginBtn.style.display = 'block';
+                userInfo.style.display = 'none';
+                messageForm.style.display = 'none';
+            }
         });
-        document.getElementById('content').value = "";
-    } catch (e) { alert("Ошибка! Проверьте Rules в Firebase."); }
-};
 
-const feedQuery = query(collection(db, "requests"), orderBy("timestamp", "desc"));
-    const feed = document.getElementById('feed');
-    feed.innerHTML = "";
-    snapshot.forEach((doc) => {
-        const data = doc.data();
-        feed.innerHTML += `
-            <div class="post">
-                <div class="post-header">
-                    <img src="${data.photo || 'https://via.placeholder.com/30'}" class="post-avatar">
-                    <b>${data.name}</b>
-                    <span class="time">${data.timestamp?.toDate().toLocaleTimeString() || '...'}</span>
-                </div>
-                <p>${data.text || data.email}</p>
-                <button class="like-btn" onclick="processLike('${doc.id}')">👍 ${data.likes || 0}</button>
-            </div>`;
-    });
-});
+        window.processLike = async (id) => {
+            await updateDoc(doc(db, "requests", id), { likes: increment(1) });
+        };
 
-// --- ЛИЧНЫЕ СООБЩЕНИЯ (DM) ---
-function getChatId(uid1, uid2) {
-    return uid1 < uid2 ? uid1 + "_" + uid2 : uid2 + "_" + uid1;
-}
+        document.getElementById('mainBtn').onclick = async () => {
+            const content = document.getElementById('content').value;
+            if (!content) return alert("Введите текст сообщения!");
 
-let currentUnsubscribe = null; // Для очистки слушателя при смене собеседника
+            try {
+                await addDoc(collection(db, "requests"), {
+                    name: auth.currentUser.displayName,
+                    email: auth.currentUser.email,
+                    photo: auth.currentUser.photoURL,
+                    text: content,
+                    likes: 0,
+                    timestamp: serverTimestamp()
+                });
+                document.getElementById('content').value = "";
+            } catch (e) {
+                alert("Ошибка безопасности! Проверьте правила (Rules) в Firebase.");
+            }
+        };
 
-// Срабатывает при вводе UID получателя
-document.getElementById("receiverId").addEventListener("input", () => {
-    const receiverId = document.getElementById("receiverId").value.trim();
-    if (!receiverId || !auth.currentUser) return;
-
-    const senderId = auth.currentUser.uid;
-    const chatId = getChatId(senderId, receiverId);
-
-    // Если уже был открыт другой чат, отключаем его
-    if (currentUnsubscribe) currentUnsubscribe();
-
-    const q = query(
-        collection(db, "messages", chatId, "messages"),
-        orderBy("timestamp", "asc")
-    );
-
-    currentUnsubscribe = onSnapshot(q, (snapshot) => {
-        const chat = document.getElementById("chat");
-        chat.innerHTML = ""; 
-        snapshot.forEach(doc => {
-            const msg = doc.data();
-            const div = document.createElement("div");
-            div.classList.add("message-bubble");
-            div.classList.add(msg.senderId === senderId ? "my-msg" : "their-msg");
-            div.textContent = msg.text;
-            chat.appendChild(div);
+        const q = query(collection(db, "requests"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = "";
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                feed.innerHTML += `
+                    <div class="post">
+                        <div class="post-header">
+                            <img src="${data.photo || 'https://via.placeholder.com/30'}" class="post-avatar">
+                            <b>${data.name}</b>
+                            <span class="time">${data.timestamp?.toDate().toLocaleTimeString() || '...'}</span>
+                        </div>
+                        <p>${data.text || data.email}</p>
+                        <button class="like-btn" onclick="processLike('${doc.id}')">👍 ${data.likes || 0}</button>
+                    </div>
+                `;
+            });
         });
-        chat.scrollTop = chat.scrollHeight;
-    });
-});
 
-// Кнопка отправить
-document.getElementById("sendBtn").onclick = async () => {
-    const textInput = document.getElementById("messageInput");
-    const receiverId = document.getElementById("receiverId").value.trim();
-    const text = textInput.value;
-
-    if (!text || !receiverId) return alert("Введите UID и текст");
-
-    const senderId = auth.currentUser.uid;
-    const chatId = getChatId(senderId, receiverId);
-
-    await addDoc(collection(db, "messages", chatId, "messages"), {
-        text: text,
-        senderId: senderId,
-        timestamp: serverTimestamp()
-    });
-    textInput.value = "";
-};
-
-// загрузка сообщений
-// Слушаем изменения в чате
-onSnapshot(q, (snapshot) => {
-    const chat = document.getElementById("chat");
-    chat.innerHTML = ""; // Очищаем чат перед обновлением
-
-    snapshot.forEach(doc => {
-        const msg = doc.data();
-        const div = document.createElement("div");
-        
-        // 1. Добавляем базовый класс пузырька
-        div.classList.add("message-bubble");
-
-        // 2. Проверяем: если отправитель — это я, красим в синий и двигаем вправо
-        if (msg.senderId === auth.currentUser.uid) {
-            div.classList.add("my-msg");
-        } else {
-            // Иначе — красим в серый и двигаем влево
-            div.classList.add("their-msg");
-        }
-
-        div.textContent = msg.text;
-        chat.appendChild(div);
-    });
-
-    // 3. Скроллим чат в самый низ, чтобы видеть новые сообщения
-    chat.scrollTop = chat.scrollHeight;
-});
+        window.db = db;
     </script>
-    
 </body>
 </html>

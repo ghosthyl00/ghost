@@ -3,44 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Монитор статусов</title>
+    <title>Статус Монитор</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f4f7f6; }
+        :root {
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #1c1e21;
+            --primary: #4285F4;
+            --border: #e4e6eb;
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, system-ui, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 { font-size: 22px; margin-top: 0; text-align: center; }
+
+        /* Секция профиля */
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #myInfo { font-weight: 600; font-size: 14px; }
+
+        #btn-logout {
+            background: #f2f2f2;
+            color: #555;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        /* Список пользователей */
+        #groupList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
         .user-item { 
-            display: flex; align-items: center; 
-            background: white; padding: 10px; 
-            margin-bottom: 8px; border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 16px; 
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 12px; 
+            transition: transform 0.2s;
         }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; border: 1px solid rgba(0,0,0,0.1); }
-        .controls { margin-top: 20px; display: flex; gap: 10px; }
+
+        .status-dot { 
+            width: 14px; 
+            height: 14px; 
+            border-radius: 50%; 
+            margin-right: 15px; 
+            box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,0.05);
+        }
+
+        .user-info strong { font-size: 15px; display: block; }
+        .user-info small { color: #65676b; font-size: 13px; }
+
+        /* Кнопки управления */
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 10px; 
+        }
+
         button { 
-            padding: 8px 15px; cursor: pointer; border: none; 
-            border-radius: 5px; transition: opacity 0.2s; 
+            padding: 12px 5px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        button:hover { opacity: 0.8; }
-        #myInfo { font-weight: bold; margin-bottom: 15px; color: #333; }
-        hr { border: 0; border-top: 1px solid #ddd; margin: 20px 0; }
+
+        button:active { transform: scale(0.96); }
+
+        /* Кнопка Google */
+        #btn-login {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            padding: 14px;
+            margin-top: 20px;
+        }
+
         .hidden { display: none; }
+
+        /* Анимация пульсации для активного статуса */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="auth-section">
-        <h1>Добро пожаловать</h1>
-        <button style="background: #4285F4; color: white;" id="btn-login">Войти через Google</button>
-    </div>
+    <div class="container">
+        <div id="auth-section">
+            <h1>Статус Монитор</h1>
+            <p style="text-align:center; color: #666;">Войдите, чтобы делиться своим статусом с командой</p>
+            <button id="btn-login">Войти через Google</button>
+        </div>
 
-    <div id="app-section" class="hidden">
-        <div id="myInfo">Загрузка профиля...</div>
-        <button id="btn-logout" style="background: #ddd; font-size: 10px;">Выйти</button>
-        <hr>
-        <div id="groupList">Загрузка списка группы...</div>
+        <div id="app-section" class="hidden">
+            <div class="profile-header">
+                <div id="myInfo">Загрузка...</div>
+                <button id="btn-logout">Выйти</button>
+            </div>
+            
+            <div id="groupList">
+                <p style="text-align:center; color:#999;">Обновление списка...</p>
+            </div>
 
-        <div class="controls">
-            <button style="background: #4caf50; color: white;" onclick="changeStatus('Работаю', '#4caf50')">Работаю</button>
-            <button style="background: #ff9800; color: white;" onclick="changeStatus('Обедаю', '#ff9800')">Обедаю</button>
-            <button style="background: #f44336; color: white;" onclick="changeStatus('Отдыхаю', '#f44336')">Отдыхаю</button>
+            <div class="controls">
+                <button style="background: #4caf50; color: white;" onclick="changeStatus('Работаю', '#4caf50')">Работаю</button>
+                <button style="background: #ff9800; color: white;" onclick="changeStatus('Обедаю', '#ff9800')">Обедаю</button>
+                <button style="background: #f44336; color: white;" onclick="changeStatus('Отдыхаю', '#f44336')">Отдыхаю</button>
+            </div>
         </div>
     </div>
 
@@ -48,12 +157,11 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
         const URL = 'https://jwmkwybnmcdrtcinwkbj.supabase.co';
-        const KEY = 'sb_publishable_br_nn2jCaXKmd5ou1IsZEA_WTe3g3Tv'; // Используй свой Anon Key
+        const KEY = 'sb_publishable_br_nn2jCaXKmd5ou1IsZEA_WTe3g3Tv'; 
         const supabase = createClient(URL, KEY);
 
         let userSession = null;
 
-        // 1. Функция входа
         document.getElementById('btn-login').onclick = async () => {
             await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -61,13 +169,11 @@
             });
         };
 
-        // 2. Функция выхода
         document.getElementById('btn-logout').onclick = async () => {
             await supabase.auth.signOut();
             window.location.reload();
         };
 
-        // 3. Обновление статуса
         window.changeStatus = async (statusText, statusColor) => {
             if (!userSession) return;
             
@@ -82,41 +188,37 @@
 
             if (error) {
                 console.error('Ошибка:', error);
-                alert("Ошибка! Проверь таблицу 'profiles' и RLS политики.");
+                alert("Ошибка доступа. Проверьте RLS политики в Supabase.");
             } else {
                 fetchGroup();
             }
         };
 
-        // 4. Получение списка всех пользователей
         async function fetchGroup() {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*');
+                .select('*')
+                .order('username');
 
-            if (error) {
-                console.error(error);
-                return;
-            }
+            if (error) return;
 
             const listContainer = document.getElementById('groupList');
             listContainer.innerHTML = data.map(user => `
                 <div class="user-item">
                     <div class="status-dot" style="background: ${user.color || '#ccc'}"></div>
-                    <div style="flex-grow: 1;">
-                        <strong>${user.username || 'Без имени'}</strong><br>
-                        <small style="color: #666;">${user.status || 'Нет статуса'}</small>
+                    <div class="user-info">
+                        <strong>${user.username || 'Участник'}</strong>
+                        <small>${user.status || 'Статус не установлен'}</small>
                     </div>
                 </div>
             `).join('');
 
             const currentUser = data.find(u => u.id === userSession.id);
             if (currentUser) {
-                document.getElementById('myInfo').innerText = `Вы зашли как: ${currentUser.username}`;
+                document.getElementById('myInfo').innerText = `👤 ${currentUser.username}`;
             }
         }
 
-        // 5. Проверка авторизации при загрузке
         async function init() {
             const { data } = await supabase.auth.getSession();
             if (data.session) {

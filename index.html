@@ -65,17 +65,17 @@
         };
 
         // Функция получения данных
-        async function fetchGroup() {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('username', { ascending: true });
-
-            if (error) {
-                console.error('Ошибка загрузки:', error);
-                return;
-            }
-
+       async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  })
+}
             // Рендерим список пользователей
             const listContainer = document.getElementById('groupList');
             listContainer.innerHTML = data.map(user => `
